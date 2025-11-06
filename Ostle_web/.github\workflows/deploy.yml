@@ -34,10 +34,28 @@ jobs:
 
       - name: Get repository name
         id: repo
-        run: echo "name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
+        run: |
+          REPO_NAME="${{ github.event.repository.name }}"
+          echo "Repository name: $REPO_NAME"
+          echo "name=$REPO_NAME" >> $GITHUB_OUTPUT
+          echo "BASE_PATH will be: /$REPO_NAME"
 
       - name: Build
-        run: npm run build
+        run: |
+          echo "Building with BASE_PATH=/${{ steps.repo.outputs.name }}"
+          BASE_PATH_VALUE="/${{ steps.repo.outputs.name }}"
+          echo "BASE_PATH will be set to: $BASE_PATH_VALUE"
+          export BASE_PATH="$BASE_PATH_VALUE"
+          npm run build
+          echo "Build completed. Checking output directory..."
+          ls -la out/ || echo "out directory not found!"
+          if [ -f "out/index.html" ]; then
+            echo "✓ index.html found in out/"
+          else
+            echo "✗ index.html NOT found in out/"
+            echo "Contents of out/:"
+            ls -la out/ || true
+          fi
         env:
           # リポジトリ名をbasePathに設定（例: /Ostle_web）
           # ルートドメイン（username.github.io）でホストする場合は空文字列に変更
