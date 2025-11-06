@@ -12,9 +12,10 @@ permissions:
   pages: write
   id-token: write
 
+# 同時実行制御: 同じブランチの最新のデプロイのみを実行
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: "pages-${{ github.ref }}"
+  cancel-in-progress: true
 
 jobs:
   build:
